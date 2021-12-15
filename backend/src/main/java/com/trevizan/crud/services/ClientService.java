@@ -2,6 +2,8 @@ package com.trevizan.crud.services;
 
 import java.util.Optional;
 
+import javax.persistence.EntityNotFoundException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
@@ -33,21 +35,32 @@ public class ClientService {
 		return new ClientDTO(entity);
 	}
 
-	public void delete(Long id) {
-		try {
-			repository.deleteById(id);
-		} catch (EmptyResultDataAccessException e) {
-			throw new ResourceNotFoundException("ID " + id + " não encontrado");
-		}
-
-	}
-
 	@Transactional
 	public ClientDTO insert(ClientDTO dto) {
 		Client entity = new Client();
 		copyDtoToEntity(dto, entity);
 		entity = repository.save(entity);
 		return new ClientDTO(entity);
+	}
+
+	@Transactional
+	public ClientDTO update(Long id, ClientDTO dto) {
+		try {
+			Client entity = repository.getOne(id);
+			copyDtoToEntity(dto, entity);
+			entity = repository.save(entity);
+			return new ClientDTO(entity);
+		} catch (EntityNotFoundException e) {
+			throw new ResourceNotFoundException("ID " + id + " não encontrado");
+		}
+	}
+
+	public void delete(Long id) {
+		try {
+			repository.deleteById(id);
+		} catch (EmptyResultDataAccessException e) {
+			throw new ResourceNotFoundException("ID " + id + " não encontrado");
+		}
 	}
 
 	private void copyDtoToEntity(ClientDTO dto, Client entity) {
